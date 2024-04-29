@@ -16,7 +16,7 @@ The project is part of the course [02180 Introduction to Artificial Intelligence
 
 
 ### Project structure
-* `BeliefsByThomas.py`: Runs the main script which consists of everything from the belief base to the menu.
+* `BeliefsBased.py`: Runs the main script which consists of everything from the belief base to the menu.
 
 ### Installation
 
@@ -27,7 +27,7 @@ $ pip install sympy
 
 ### Usage
 
-The engine can be used through the mainscript `BeliefsByThomas.py`
+The engine can be used through the mainscript `BeliefsBased.py`
 
 #### Example of usage
 ```
