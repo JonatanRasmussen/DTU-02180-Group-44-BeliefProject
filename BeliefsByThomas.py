@@ -91,11 +91,11 @@ def to_cnf2(formula_str):
     #sympy_expr = formula_str
 
     # Convert to CNF using sympy's to_cnf function
-    cnf_expr = to_cnf(sympy_expr, simplify=True)
+    clauses = to_cnf(sympy_expr, simplify=True)
 
     # # Convert the CNF expression into a set of clauses
-    if isinstance(cnf_expr, And):
-        clauses = set(cnf_expr.args)
+    if isinstance(clauses, And):
+        clauses = set(clauses.args)
 
     clauses = str(clauses).replace(" ", "").replace("~", "!").replace("{","").replace("}","")
     clauses = set(clauses.split(','))
