@@ -93,16 +93,9 @@ def to_cnf2(formula_str):
     # Convert to CNF using sympy's to_cnf function
     cnf_expr = to_cnf(sympy_expr, simplify=True)
 
-    # Convert the CNF expression into a set of clauses without string manipulation
+    # # Convert the CNF expression into a set of clauses
     if isinstance(cnf_expr, And):
-        # If the CNF expression is a conjunction, get the args
         clauses = set(cnf_expr.args)
-    elif isinstance(cnf_expr, Or):
-        # If the CNF expression is a single clause, wrap it in a set
-        clauses = {cnf_expr}
-    else:
-        # If the CNF expression is a literal, also wrap it in a set
-        clauses = {cnf_expr}
 
     clauses = str(clauses).replace(" ", "").replace("~", "!").replace("{","").replace("}","")
     clauses = set(clauses.split(','))
