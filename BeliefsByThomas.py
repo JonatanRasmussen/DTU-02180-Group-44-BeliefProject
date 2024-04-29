@@ -1,5 +1,5 @@
 
-from sympy import symbols, to_cnf
+from sympy import symbols, to_cnf, And, Or
 from sympy.parsing.sympy_parser import parse_expr
 from itertools import combinations
 
@@ -35,25 +35,6 @@ class BeliefBase:
             self.beliefs.remove(belief)
             print(f"Removed '{belief}' to resolve contradiction.")
 
-    # def find_conflicting_beliefs(self, formula):
-    #     """ Identify beliefs that conflict with the given formula. """
-    #     conflicting_beliefs = set()
-    #     clause_temp = self.beliefs.copy()
-    #     clause_temp.add(formula)
-    #     conflict = False
-    #     if resolution_entailment(BeliefBase(clause_temp), 'False'):  # Check if belief and formula together lead to contradiction
-    #         conflicting_beliefs.update(self.beliefs) 
-    #     else:
-    #         return conflicting_beliefs  # No conflicts found, return empty set
-    #     for belief in self.beliefs:
-    #         if resolution_entailment(BeliefBase({belief, formula}), 'False'):  # Check if belief and formula together lead to contradiction
-    #             if conflict == False:
-    #                 conflict = True
-    #                 conflicting_beliefs.clear()
-    #             conflicting_beliefs
-    #             conflicting_beliefs.add(belief)
-    #     return conflicting_beliefs
-
     def find_conflicting_beliefs(self, formula):
         """ Identify beliefs that conflict with the given formula. """
         conflicting_beliefs = set()
@@ -88,7 +69,6 @@ def negate(literal):
 operator_mapping = {
     '!': '~',
 }
-
 def to_cnf2(formula_str):
     # Replace the operators in your formula with sympy's equivalents
     while '->' in formula_str or '<->' in formula_str:
@@ -111,16 +91,56 @@ def to_cnf2(formula_str):
     #sympy_expr = formula_str
 
     # Convert to CNF using sympy's to_cnf function
-    cnf_expr = str(to_cnf(sympy_expr, simplify=True)).replace(" ", "").replace("~", "!")
-    if '&' in cnf_expr:
-        if '(' not in cnf_expr:
-            cnf_expr = cnf_expr.split('&')
-        else:
-            cnf_expr = set(cnf_expr[1:-1].split(')&('))
+    cnf_expr = to_cnf(sympy_expr, simplify=True)
+
+    # Convert the CNF expression into a set of clauses without string manipulation
+    if isinstance(cnf_expr, And):
+        # If the CNF expression is a conjunction, get the args
+        clauses = set(cnf_expr.args)
+    elif isinstance(cnf_expr, Or):
+        # If the CNF expression is a single clause, wrap it in a set
+        clauses = {cnf_expr}
     else:
-        cnf_expr = [cnf_expr]
+        # If the CNF expression is a literal, also wrap it in a set
+        clauses = {cnf_expr}
+
+    clauses = str(clauses).replace(" ", "").replace("~", "!").replace("{","").replace("}","")
+    clauses = set(clauses.split(','))
+
+    return clauses
+
+# def to_cnf2(formula_str):
+#     # Replace the operators in your formula with sympy's equivalents
+#     while '->' in formula_str or '<->' in formula_str:
+#         if '<->' in formula_str:
+#             p_index = formula_str.index('<->')
+#             formula_str = replace_operator(formula_str, p_index, '<->', lambda a, b: f"Equivalent({a},{b})")
+#         if '->' in formula_str:
+#             p_index = formula_str.index('->')
+#             formula_str = replace_operator(formula_str, p_index, '->', lambda a, b: f"Implies({a},{b})")
+
+#     for op_str, op_sympy in operator_mapping.items():
+#         formula_str = formula_str.replace(op_str, f' {op_sympy} ')
     
-    return cnf_expr
+#     # Create symbols for every unique alphabetical character in the string
+#     atomic_propositions = set(filter(str.isalpha, formula_str))
+#     symbols_map = {prop: symbols(prop) for prop in atomic_propositions}
+
+#     # Translate the formula string into a sympy expression
+#     sympy_expr = parse_expr(formula_str, local_dict=symbols_map)
+#     #sympy_expr = formula_str
+
+#     # Convert to CNF using sympy's to_cnf function
+#     cnf_expr = str(to_cnf(sympy_expr, simplify=True)).replace(" ", "").replace("~", "!")
+#     if '&' in cnf_expr:
+#         if '(' not in cnf_expr:
+#             cnf_expr = cnf_expr.split('&')
+#         else:
+#             cnf_expr = set(cnf_expr[1:-1].split(')&('))
+#     else:
+#         cnf_expr = [cnf_expr]
+    
+#     return cnf_expr
     
 
 def resolve(clause1, clause2):
