@@ -31,9 +31,28 @@ class BeliefBase:
 
     def contraction(self, conflicting_beliefs):
         """ Contract the belief base to remove conflicting beliefs using minimal change. """
-        for belief in conflicting_beliefs:
+        for belief in conflicting_beliefs.copy():
             self.beliefs.remove(belief)
             print(f"Removed '{belief}' to resolve contradiction.")
+
+    # def find_conflicting_beliefs(self, formula):
+    #     """ Identify beliefs that conflict with the given formula. """
+    #     conflicting_beliefs = set()
+    #     clause_temp = self.beliefs.copy()
+    #     clause_temp.add(formula)
+    #     conflict = False
+    #     if resolution_entailment(BeliefBase(clause_temp), 'False'):  # Check if belief and formula together lead to contradiction
+    #         conflicting_beliefs.update(self.beliefs) 
+    #     else:
+    #         return conflicting_beliefs  # No conflicts found, return empty set
+    #     for belief in self.beliefs:
+    #         if resolution_entailment(BeliefBase({belief, formula}), 'False'):  # Check if belief and formula together lead to contradiction
+    #             if conflict == False:
+    #                 conflict = True
+    #                 conflicting_beliefs.clear()
+    #             conflicting_beliefs
+    #             conflicting_beliefs.add(belief)
+    #     return conflicting_beliefs
 
     def find_conflicting_beliefs(self, formula):
         """ Identify beliefs that conflict with the given formula. """
@@ -41,17 +60,16 @@ class BeliefBase:
         clause_temp = self.beliefs.copy()
         clause_temp.add(formula)
         conflict = False
-        if resolution_entailment(BeliefBase(clause_temp), 'False'):  # Check if belief and formula together lead to contradiction
-            conflicting_beliefs.update(self.beliefs) 
-        else:
+        if not resolution_entailment(BeliefBase(clause_temp), 'False'):  # Check if belief and formula together lead to contradiction
             return conflicting_beliefs  # No conflicts found, return empty set
-        for belief in self.beliefs:
-            if resolution_entailment(BeliefBase({belief, formula}), 'False'):  # Check if belief and formula together lead to contradiction
-                if conflict == False:
-                    conflict = True
-                    conflicting_beliefs.clear()
-                conflicting_beliefs
-                conflicting_beliefs.add(belief)
+        
+        for subset_size in range(1, len(self.beliefs) + 1):
+            for subset in combinations(self.beliefs, subset_size):
+                super_sub = self.beliefs - set(subset)
+                super_sub.add(formula)
+                if not resolution_entailment(BeliefBase(super_sub), 'False'):
+                    conflicting_beliefs.update(subset)
+                    return conflicting_beliefs
         return conflicting_beliefs
 
     def entails(self, formula):
@@ -93,7 +111,7 @@ def to_cnf2(formula_str):
     #sympy_expr = formula_str
 
     # Convert to CNF using sympy's to_cnf function
-    cnf_expr = str(to_cnf(sympy_expr, simplify=False)).replace(" ", "").replace("~", "!")
+    cnf_expr = str(to_cnf(sympy_expr, simplify=True)).replace(" ", "").replace("~", "!")
     if '&' in cnf_expr:
         if '(' not in cnf_expr:
             cnf_expr = cnf_expr.split('&')
